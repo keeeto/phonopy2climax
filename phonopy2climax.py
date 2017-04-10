@@ -65,7 +65,7 @@ output.write(" BEGIN header \n")
 output.write(" Number of ions         %i\n" % len(crystal.positions))
 output.write(" Number of branches     %i\n" % len(data['phonon'][0]['band']))
 output.write(" Number of wavevectors  %i\n" % len(data['phonon']))
-output.write(" Frequencies in         THz\n")
+output.write(" Frequencies in         cm-1\n")
 output.write(" IR intensities in      (D/A)**2/amu\n")
 output.write(" Raman intensities in   A**4\n")
 output.write(" Unit cell vectors (A)\n")
@@ -73,15 +73,15 @@ for vector in crystal.cell:
     output.write("   %8.5f   %8.5f   %8.5f \n" % (vector[0],vector[1],vector[2]))
 output.write(" Fractional Co-ordinates\n")
 for i, ion in enumerate(crystal.positions):
-    output.write("  %i   %8.5f   %8.5f   %8.5f   %s   %8.5f \n" % (i,positions[i,0],
+    output.write("  %i   %8.5f   %8.5f   %8.5f   %s   %8.5f \n" % (i+1,positions[i,0],
                 positions[i,1],positions[i,2], symbols[i], masses[i]))
 output.write(" END header \n")
 
 for i in range(len(data['phonon'])):
-    output.write("    q-pt=   %i   %8.5f   %8.5f   %8.5f   %8.5f \n  " % ( i, q_points[i][0], q_points[i][1],
+    output.write("    q-pt=   %i   %8.5f   %8.5f   %8.5f   %8.5f \n  " % ( i+1, q_points[i][0], q_points[i][1],
                                                                           q_points[i][2], weights[i]))
     for j in range(len(data['phonon'][0]['band'])):
-        output.write("       %i   %8.5f \n" % (j, frequencies[i,j]))
+        output.write("       %i   %8.5f \n" % (j, frequencies[i,j] * 33.35641))
     output.write("                  Phonon Eigenvectors   \n")
     output.write("Mode Ion                X                                   Y                                   Z\n")
     for j in range(len(data['phonon'][0]['band'])):
