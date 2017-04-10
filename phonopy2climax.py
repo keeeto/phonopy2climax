@@ -1,6 +1,5 @@
 import yaml
 import numpy as np
-import ase.io as io
 
 
 def yaml_loader(filepath):
@@ -23,6 +22,19 @@ def load_weights(data):
     for i in range(len(data['phonon'])):
         new_list[i] = data['phonon'][i]['weight']
     return new_list
+
+def load_positions(data):
+    """Extracts a particular property from the disctionary and returns as a list"""
+    positions = []
+    for i in range(len(data['atoms'])):
+	positions.append([data['atoms'][i]['position'],data['atoms'][i]['symbol'],data['atoms'][i]['mass']])
+    return positions
+
+def load_lattice(data):
+    lattice = np.zeros(shape=(3,3))
+    for i, element in enumerate(data['lattice']):
+	lattice[i] = element
+    return lattice
 
 def load_q_points(data):
     """Extracts a particular property from the disctionary and returns as a list"""
@@ -55,26 +67,24 @@ q_points = load_q_points(data)
 # Loads up the q-point weights
 weights = load_weights(data)
 
-crystal = io.read('POSCAR',format='vasp')
-symbols = crystal.get_chemical_symbols()
-masses = crystal.get_masses()
-positions = crystal.get_scaled_positions()
+positions = load_positions(data) 
+lattice = load_lattice(data)
 
 output = open('climax_input.phonon', 'w')
 output.write(" BEGIN header \n")
-output.write(" Number of ions         %i\n" % len(crystal.positions))
+output.write(" Number of ions         %i\n" % len(positions))
 output.write(" Number of branches     %i\n" % len(data['phonon'][0]['band']))
 output.write(" Number of wavevectors  %i\n" % len(data['phonon']))
 output.write(" Frequencies in         cm-1\n")
 output.write(" IR intensities in      (D/A)**2/amu\n")
 output.write(" Raman intensities in   A**4\n")
 output.write(" Unit cell vectors (A)\n")
-for vector in crystal.cell:
+for vector in lattice:
     output.write("   %8.5f   %8.5f   %8.5f \n" % (vector[0],vector[1],vector[2]))
 output.write(" Fractional Co-ordinates\n")
-for i, ion in enumerate(crystal.positions):
-    output.write("  %i   %8.5f   %8.5f   %8.5f   %s   %8.5f \n" % (i+1,positions[i,0],
-                positions[i,1],positions[i,2], symbols[i], masses[i]))
+for i, ion in enumerate(positions):
+    output.write("  %i   %8.5f   %8.5f   %8.5f   %s   %8.5f \n" % (i+1,positions[i][0][0],
+                positions[i][0][1],positions[i][0][2], positions[i][1], positions[i][2]))
 output.write(" END header \n")
 
 for i in range(len(data['phonon'])):
@@ -85,7 +95,7 @@ for i in range(len(data['phonon'])):
     output.write("                  Phonon Eigenvectors   \n")
     output.write("Mode Ion                X                                   Y                                   Z\n")
     for j in range(len(data['phonon'][0]['band'])):
-        for k in range(len(crystal.positions)):
+        for k in range(len(positions)):
             output.write("  %i  %i  %10.6f %10.6f   %10.6f %10.6f   %10.6f %10.6f\n" % (j+1, k+1, real_vec[i,j,k,0],
                         im_vec[i,j,k,0],real_vec[i,j,k,1],im_vec[i,j,k,1],real_vec[i,j,k,2],im_vec[i,j,k,2]))
 output.close()
