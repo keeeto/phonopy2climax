@@ -1,6 +1,12 @@
 import yaml
 import numpy as np
+from optparse import OptionParser
 
+parser = OptionParser()
+parser.add_option("-f", "--file",
+                  action="store", type="string", dest="file", default="mesh.yaml",
+                  help="Path to input file [default: ./mesh.yaml]")
+(options, args) = parser.parse_args()
 
 def yaml_loader(filepath):
     """Reads in yaml files"""
@@ -26,8 +32,8 @@ def load_weights(data):
 def load_positions(data):
     """Extracts a particular property from the disctionary and returns as a list"""
     positions = []
-    for i in range(len(data['atoms'])):
-	positions.append([data['atoms'][i]['position'],data['atoms'][i]['symbol'],data['atoms'][i]['mass']])
+    for i in range(len(data['points'])):
+	positions.append([data['points'][i]['coordinates'],data['points'][i]['symbol'],data['points'][i]['mass']])
     return positions
 
 def load_lattice(data):
@@ -57,7 +63,7 @@ def load_eigenvectors(data):
                     im_list[i,j,k,l] = data['phonon'][i]['band'][j]['eigenvector'][k][l][1]
     return real_list,im_list
 
-data = yaml_loader('mesh.yaml')
+data = yaml_loader(options.file)
 # Load up the frequencies, they are stored a list of lists, sorted by q-point
 frequencies = load_frequencies(data)
 # Loads up the eigenvotors, they are sorted by [q-pt,band,atom,cartesian_direction]
@@ -92,7 +98,7 @@ for i in range(len(data['phonon'])):
                                                                           q_points[i][2], weights[i]))
     for j in range(len(data['phonon'][0]['band'])):
         output.write("       %i   %8.5f \n" % (j, frequencies[i,j] * 33.35641))
-    output.write("                  Phonon Eigenvectors   \n")
+    output.write("Phonon Eigenvectors   \n")
     output.write("Mode Ion                X                                   Y                                   Z\n")
     for j in range(len(data['phonon'][0]['band'])):
         for k in range(len(positions)):
