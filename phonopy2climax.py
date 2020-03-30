@@ -33,13 +33,13 @@ def load_positions(data):
     """Extracts a particular property from the disctionary and returns as a list"""
     positions = []
     for i in range(len(data['points'])):
-	positions.append([data['points'][i]['coordinates'],data['points'][i]['symbol'],data['points'][i]['mass']])
+        positions.append([data['points'][i]['coordinates'],data['points'][i]['symbol'],data['points'][i]['mass']])
     return positions
 
 def load_lattice(data):
     lattice = np.zeros(shape=(3,3))
     for i, element in enumerate(data['lattice']):
-	lattice[i] = element
+        lattice[i] = element
     return lattice
 
 def load_q_points(data):
